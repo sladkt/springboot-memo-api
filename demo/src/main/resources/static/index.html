@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>📓 메모장</title>
+</head>
+<body>
+  <h1>📓 메모장</h1>
+  <form id="memoForm">
+    <input type="text" id="title" placeholder="제목" required />
+    <br />
+    <textarea id="content" placeholder="내용" required></textarea>
+    <br />
+    <button type="submit">메모 저장</button>
+  </form>
+
+  <h2>📋 메모 목록</h2>
+  <ul id="memoList"></ul>
+
+  <script>
+    const API_URL = "https://crispy-umbrella-pxpprxvjvxx396g-8080.app.github.dev/memos";
+  
+    async function fetchMemos() {
+      const res = await fetch(API_URL);
+      const memos = await res.json();
+      const list = document.getElementById("memoList");
+      list.innerHTML = "";
+      memos.forEach(memo => {
+        const li = document.createElement("li");
+        li.textContent = `${memo.title}: ${memo.content} `;
+  
+        const delBtn = document.createElement("button");
+        delBtn.textContent = "삭제";
+        delBtn.onclick = async () => {
+          await fetch(`${API_URL}/${memo.id}`, {
+            method: "DELETE"
+          });
+          fetchMemos(); // 삭제 후 목록 새로고침
+        };
+  
+        li.appendChild(delBtn);
+        list.appendChild(li);
+      });
+    }
+  
+    document.getElementById("memoForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const title = document.getElementById("title").value;
+      const content = document.getElementById("content").value;
+  
+      await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title, content })
+      });
+  
+      document.getElementById("title").value = "";
+      document.getElementById("content").value = "";
+      fetchMemos();
+    });
+  
+    fetchMemos();
+  </script>
+  
+</body>
+</html>
